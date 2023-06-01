@@ -8,7 +8,7 @@ import { EuiGlobalToastList } from '@elastic/eui';
 import Invoice from '../widgetViews/summaries/wantedSummaries/invoice';
 import moment from 'moment';
 import { invoicePollTarget } from 'config';
-import { SOCKET_MSG, URL } from 'config/socket';
+import { SOCKET_MSG, URL, createSocketInstance } from 'config/socket';
 
 export default function AssignBounty(props: ConnectCardProps) {
   const color = colors['light'];
@@ -52,7 +52,7 @@ export default function AssignBounty(props: ConnectCardProps) {
     setLnInvoice(data.response.invoice);
   };
 
-  const onHandle = (data: any, props: any) => {
+  const onHandle = (data: any) => {
     const res = JSON.parse(data.data);
     if (res.msg ===
       SOCKET_MSG.assign_success && res.invoice === main.lnInvoice) {
@@ -70,14 +70,35 @@ export default function AssignBounty(props: ConnectCardProps) {
   }
 
   useEffect(() => {
-    let socket = new WebSocket(URL);
+    const socket: WebSocket = createSocketInstance();
 
-    socket.addEventListener('message', (data) => {
-      console.log("Props =")
-      onHandle(data, props)
-    })
+    socket.onopen = () => {
+      console.log('Socket connected');
+    };
 
-  }, [])
+    socket.onmessage = (event: MessageEvent) => {
+      console.log(event);
+      onHandle(event)
+    };
+
+    socket.onclose = () => {
+      console.log('Socket disconnected');
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   let socket = new WebSocket(URL);
+
+  //   socket.addEventListener('message', (data) => {
+  //     console.log("Props =")
+  //     onHandle(data, props)
+  //   })
+
+  // }, [])
 
   // useLayoutEffect(() => {
   //   return () => {

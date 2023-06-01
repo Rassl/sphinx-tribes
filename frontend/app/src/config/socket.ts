@@ -14,3 +14,20 @@ export const SOCKET_MSG = {
    assign_success: 'assign_success'
 };
 
+let socket: WebSocket | null = null;
+
+export const createSocketInstance = (): WebSocket => {
+  if (!socket) {
+    socket = new WebSocket(URL);
+  }
+
+  return socket;
+};
+
+export const getSocketInstance = (): WebSocket => {
+  if (!socket) {
+    throw new Error('Socket instance not created. Call createSocketInstance first.');
+  }
+
+  return socket;
+};
